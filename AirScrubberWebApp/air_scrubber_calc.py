@@ -48,7 +48,7 @@ def calculate_scrubber(inputs):
     vertical_branches = max(1, x3 - 1)
     E25 = vertical_branches * E19
     E26 = math.ceil(x2 / vertical_branches)
-    G12 = max(168, E25 * E26)
+    G12 = max(x1, E25 * E26)
 
     # Pipe diameters
     D29 = math.floor(math.sqrt(((math.ceil(D3 * 0.227)) * 2) / (pi_val * 3600)) * 1000)
