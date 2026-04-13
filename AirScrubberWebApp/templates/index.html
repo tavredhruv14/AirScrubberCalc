@@ -1,532 +1,506 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Air Scrubber Flow Calculator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #00d2ff;
-            --secondary: #3a7bd5;
-            --bg: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: rgba(255, 255, 255, 0.1);
-        }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Clean Air Scrubber Calculator</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Outfit', sans-serif;
-        }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    min-height: 100vh;
+  }
 
-        body {
-            background: linear-gradient(135deg, var(--bg) 0%, #1e1e2f 100%);
-            color: var(--text-main);
-            min-height: 100vh;
-            padding: 20px;
-        }
+  /* ── Header ── */
+  .app-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #fff;
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  }
+  .app-header .logo {
+    width: 46px; height: 46px;
+    background: #e94560;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+  }
+  .app-header h1 { font-size: 1.35rem; font-weight: 600; letter-spacing: .3px; }
+  .app-header p  { font-size: .8rem; opacity: .7; margin-top: 2px; }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+  /* ── Layout ── */
+  .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
 
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding-top: 20px;
-        }
+  /* ── Input Card ── */
+  .input-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+  .card-head {
+    background: #1a1a2e;
+    color: #fff;
+    padding: .85rem 1.5rem;
+    display: flex; align-items: center; gap: .75rem;
+    font-size: .95rem; font-weight: 600;
+  }
+  .card-head .icon {
+    width: 28px; height: 28px;
+    background: rgba(255,255,255,.15);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
 
-        h1 {
-            font-size: 2.5rem;
-            background: -webkit-linear-gradient(left, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-            animation: fadeIn 1s ease-in;
-        }
+  .inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+    padding: 1.5rem;
+  }
+  .field label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 6px;
+  }
+  .field input, .field select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1a1a2e;
+    background: #fafafa;
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+  }
+  .field input:focus, .field select:focus {
+    border-color: #0f3460;
+    box-shadow: 0 0 0 3px rgba(15,52,96,.1);
+    background: #fff;
+  }
 
-        p.subtitle {
-            color: var(--text-muted);
-            font-weight: 300;
-        }
+  .btn-row { padding: 0 1.5rem 1.5rem; display: flex; gap: 1rem; }
+  .btn-calc {
+    flex: 1;
+    padding: 11px 0;
+    background: linear-gradient(135deg, #0f3460, #e94560);
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: .3px;
+    transition: opacity .2s, transform .1s;
+  }
+  .btn-calc:hover  { opacity: .92; }
+  .btn-calc:active { transform: scale(.98); }
+  .btn-print {
+    padding: 11px 22px;
+    background: #fff;
+    color: #0f3460;
+    border: 1.5px solid #0f3460;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .btn-print:hover { background: #f0f4ff; }
 
-        /* Glassmorphism Card styling */
-        .glass-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 50px;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            animation: slideUp 0.8s ease-out backwards;
-        }
+  /* ── Results ── */
+  #results { display: none; }
+  #results.show { display: block; }
 
-        /* Forms */
-        .grid-form {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-        }
+  /* ── Overview metrics ── */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+  .metric-card {
+    background: #f7f9ff;
+    border: 1.5px solid #e8eaf6;
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    text-align: center;
+  }
+  .metric-card .m-val {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #0f3460;
+    line-height: 1;
+  }
+  .metric-card .m-unit {
+    font-size: 11px;
+    font-weight: 600;
+    color: #e94560;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-top: 2px;
+  }
+  .metric-card .m-label {
+    font-size: 11.5px;
+    color: #888;
+    margin-top: 6px;
+    font-weight: 500;
+  }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
+  /* ── Result Tables ── */
+  .result-section { margin-bottom: 2rem; }
 
-        label {
-            font-size: 0.9rem;
-            margin-bottom: 8px;
-            color: var(--text-muted);
-        }
+  .section-head {
+    display: flex; align-items: center; gap: .75rem;
+    margin-bottom: .75rem;
+  }
+  .section-head .num-badge {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .badge-orange { background: #fff3e0; color: #e65100; }
+  .badge-blue   { background: #e3f2fd; color: #0d47a1; }
+  .badge-green  { background: #e8f5e9; color: #1b5e20; }
 
-        input, select {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px 16px;
-            color: white;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
+  .section-head h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+  .section-head span.sub {
+    font-size: .8rem;
+    font-weight: 400;
+    color: #888;
+    margin-left: 6px;
+  }
 
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(0, 210, 255, 0.2);
-        }
+  .table-wrap {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  thead th {
+    padding: 11px 16px;
+    text-align: left;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: #555;
+    border-bottom: 2px solid #eee;
+    background: #fafafa;
+  }
+  thead th.right { text-align: right; }
+  tbody td {
+    padding: 11px 16px;
+    border-bottom: 1px solid #f2f2f2;
+    color: #222;
+  }
+  tbody td.right {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: #0f3460;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: #f7f9ff; }
 
-        .btn {
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(58, 123, 213, 0.4);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
+  .sr-cell {
+    width: 52px;
+    font-weight: 700;
+    color: #aaa;
+    font-size: 12px;
+  }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(58, 123, 213, 0.6);
-        }
+  /* highlight row for special items */
+  tbody tr.highlight td { background: #fff8f0; }
 
-        .actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 30px;
-        }
-
-        /* Header action bar (right aligned Print) */
-        .header-actions {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        /* Results Display */
-        #results {
-            display: none;
-        }
-
-        .overview-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .stat-box {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            text-align: center;
-            transition: transform 0.2s ease;
-        }
-        .stat-box:hover {
-            transform: scale(1.02);
-            border-color: rgba(0, 212, 255, 0.4);
-        }
-
-        .stat-value {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 8px;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        /* Summary Table */
-        .table-wrapper {
-            overflow-x: auto;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            background: rgba(15, 23, 42, 0.3);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            text-align: left;
-            padding: 14px 16px;
-        }
-        
-        tr.item-row td {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        th {
-            background: rgba(0, 0, 0, 0.3);
-            color: var(--primary);
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-            border-bottom: 2px solid var(--border);
-        }
-        
-        .header-row td {
-            font-weight: bold;
-            color: var(--primary);
-            font-size: 1.1rem;
-            border-bottom: 1px solid var(--border);
-            padding-top: 20px;
-        }
-
-        tr:hover.item-row td {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .loader {
-            display: none;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Print Styles */
-        @media print {
-            body {
-                background: white !important;
-                color: black !important;
-                padding: 0;
-            }
-            .glass-card {
-                background: none !important;
-                border: none !important;
-                box-shadow: none !important;
-                margin-bottom: 30px !important;
-                padding: 0;
-                filter: none;
-            }
-            input, select {
-                border: none;
-                background: none;
-                color: black;
-                padding: 0;
-                margin-bottom: 10px;
-            }
-            h1 {
-                background: none;
-                -webkit-text-fill-color: black;
-            }
-            .btn, button {
-                display: none !important;
-            }
-            
-            .table-wrapper {
-                border: none;
-                background: none;
-            }
-            
-            table th {
-                background: #f1f5f9;
-                color: #334155;
-            }
-            table th, tr.item-row td {
-                border-bottom: 1px solid #cbd5e1;
-            }
-            .header-row td {
-                color: #0f172a;
-                border-bottom: 1px solid #94a3b8;
-            }
-            .stat-box {
-                border: 1px solid #cbd5e1;
-            }
-            .stat-value {
-                color: #0f172a;
-            }
-            .stat-label {
-                color: #64748b;
-            }
-        }
-    </style>
+  /* ── Print styles ── */
+  @media print {
+    body { background: #fff; }
+    .app-header { background: #1a1a2e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .btn-row, .btn-print { display: none; }
+    .input-card { box-shadow: none; border: 1px solid #ddd; }
+    .table-wrap { box-shadow: none; border: 1px solid #ddd; }
+    .result-section { break-inside: avoid; }
+  }
+</style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <h1>Air Scrubber Calculator</h1>
-            <p class="subtitle">Advanced Flow Rate & System Specification Tool</p>
-        </header>
+<header class="app-header">
+  <div class="logo">AS</div>
+  <div>
+    <h1>Clean Air Scrubber — Sizing Calculator</h1>
+    <p>Nozzle Layout · Piping Schedule · Accessories & Valves</p>
+  </div>
+</header>
 
-        <main>
-            <!-- Input Section (Flattened as requested) -->
-            <section class="glass-card" style="animation-delay: 0.1s;">
-                <h2 style="margin-bottom: 25px; font-weight: 600; font-size: 1.5rem;">System Parameters</h2>
-                <form id="calcForm">
-                    <div class="grid-form">
-                        <div class="form-group">
-                            <label for="cfm">Scrubber CFM</label>
-                            <input type="number" id="cfm" name="cfm" value="85000" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="ratio">Per 1000 CFM Liquid/Gas Ratio</label>
-                            <input type="number" step="0.1" id="ratio" name="ratio" value="6" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="tankInside">SS water tank Inside Scrubber</label>
-                            <select id="tankInside" name="tankInside">
-                                <option value="Yes">Yes</option>
-                                <option value="No">No</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="workingPump">Working Pump Qty.</label>
-                            <input type="number" id="workingPump" name="workingPump" value="1" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="standbyPump">Standby Pump Qty.</label>
-                            <input type="number" id="standbyPump" name="standbyPump" value="1" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="material">Piping & Valve Material</label>
-                            <input type="text" id="material" name="material" value="Stainless Steel">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="unitType">Unit Type</label>
-                            <input type="text" id="unitType" name="unitType" value="50Coving">
-                        </div>
-                        <div class="form-group">
-                            <label for="ahuHeight">AHU Height (mm)</label>
-                            <input type="number" id="ahuHeight" name="ahuHeight" value="3850">
-                        </div>
-                        <div class="form-group">
-                            <label for="ahuWidth">AHU Width (mm)</label>
-                            <input type="number" id="ahuWidth" name="ahuWidth" value="5300">
-                        </div>
-                    </div>
-                    
-                    <div class="actions">
-                        <button type="submit" class="btn" id="calcBtn">
-                            <span id="btnText">Calculate & Optimize</span>
-                            <div class="loader" id="loader"></div>
-                        </button>
-                    </div>
-                </form>
-            </section>
+<div class="container">
 
-            <!-- Results Section -->
-            <section id="results">
-                <div class="glass-card" style="animation-delay: 0.2s;">
-                    <div class="header-actions">
-                        <button class="btn" style="padding: 10px 18px; font-size: 0.95rem;" onclick="window.print()">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 5px;"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                            Print Report
-                        </button>
-                    </div>
-                    
-                    <h2 style="font-weight: 600; font-size: 1.5rem; margin-bottom: 25px;">Calculation Overview</h2>
-                    <div class="overview-grid">
-                        <div class="stat-box">
-                            <div class="stat-value" id="res-gpm">0</div>
-                            <div class="stat-label">Flow Rate per Pump (GPM)</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value" id="res-head">0</div>
-                            <div class="stat-label">Total Head (mtr H2O)</div>
-                        </div>
-                    </div>
-                </div>
+  <!-- ── Input Card ── -->
+  <div class="input-card">
+    <div class="card-head">
+      <div class="icon">⚙</div>
+      Design Input Parameters
+    </div>
+    <div class="inputs-grid">
+      <div class="field">
+        <label>Air Flow (CFM)</label>
+        <input type="number" id="cfm" value="85000" min="0"/>
+      </div>
+      <div class="field">
+        <label>L/G Ratio (GPM / 1000 CFM)</label>
+        <input type="number" id="ratio" value="6" min="1"/>
+      </div>
+      <div class="field">
+        <label>Tank Inside AHU?</label>
+        <select id="tankInside">
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Working Pumps</label>
+        <input type="number" id="workingPump" value="1" min="1"/>
+      </div>
+      <div class="field">
+        <label>Standby Pumps</label>
+        <input type="number" id="standbyPump" value="1" min="0"/>
+      </div>
+      <div class="field">
+        <label>Material</label>
+        <select id="material">
+          <option>Stainless Steel</option>
+          <option>PP</option>
+          <option>FRP</option>
+          <option>MS</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Unit Type</label>
+        <select id="unitType">
+          <option value="50Coving">50 Coving</option>
+          <option value="43Coving">43 Coving</option>
+          <option value="50Step">50 Step</option>
+          <option value="43Step">43 Step</option>
+          <option value="25Box">25 Box</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>AHU Height (mm)</label>
+        <input type="number" id="ahuHeight" value="3850" min="0"/>
+      </div>
+      <div class="field">
+        <label>AHU Width (mm)</label>
+        <input type="number" id="ahuWidth" value="5300" min="0"/>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-calc" onclick="calculate()">&#9654; Calculate</button>
+      <button class="btn-print" onclick="window.print()">&#128438; Print / Export</button>
+    </div>
+  </div>
 
-                <div class="glass-card" style="animation-delay: 0.3s; margin-bottom: 20px;">
-                    <h2 style="font-weight: 600; font-size: 1.5rem; margin-bottom: 20px;">Detailed Summary Table</h2>
-                    <div class="table-wrapper">
-                        <table id="summaryTable">
-                            <thead>
-                                <tr>
-                                    <th width="80px">Sr. No.</th>
-                                    <th>Item Description</th>
-                                    <th>Ref 1</th>
-                                    <th>Ref 2</th>
-                                    <th>UOM</th>
-                                    <th>Qty</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Rows dynamically injected -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-        </main>
+  <!-- ── Results ── -->
+  <div id="results">
+
+    <!-- Overview -->
+    <div class="input-card" style="margin-bottom:2rem;">
+      <div class="card-head" style="background:#0f3460;">
+        <div class="icon">&#9654;</div>
+        Overview — Pump &amp; System Summary
+      </div>
+      <div class="metrics-grid" id="metrics-grid"></div>
     </div>
 
-    <script>
-        document.getElementById('calcForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const btn = document.getElementById('calcBtn');
-            const loader = document.getElementById('loader');
-            const btnText = document.getElementById('btnText');
-            
-            // Loading state
-            btn.disabled = true;
-            btnText.style.display = 'none';
-            loader.style.display = 'block';
+    <!-- Table 1 -->
+    <div class="result-section">
+      <div class="section-head">
+        <div class="num-badge badge-orange">1</div>
+        <h2>Nozzle Layout<span class="sub">Total vertical branches &amp; nozzles per branch</span></h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sr-cell">Sr. No.</th>
+              <th>Item</th>
+              <th>UOM</th>
+              <th class="right">Total Qty</th>
+            </tr>
+          </thead>
+          <tbody id="tbody1"></tbody>
+        </table>
+      </div>
+    </div>
 
-            // Gather data from flat forms directly
-            const formData = {
-                cfm: document.getElementById('cfm').value,
-                ratio: document.getElementById('ratio').value,
-                tankInside: document.getElementById('tankInside').value,
-                workingPump: document.getElementById('workingPump').value,
-                standbyPump: document.getElementById('standbyPump').value,
-                material: document.getElementById('material').value,
-                unitType: document.getElementById('unitType').value,
-                ahuHeight: document.getElementById('ahuHeight').value,
-                ahuWidth: document.getElementById('ahuWidth').value
-            };
+    <!-- Table 2 -->
+    <div class="result-section">
+      <div class="section-head">
+        <div class="num-badge badge-blue">2</div>
+        <h2>Piping Schedule<span class="sub">PN16/PN10 pipe sizing &amp; running lengths</span></h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sr-cell">Sr. No.</th>
+              <th>Piping Item</th>
+              <th class="right">Calc. Dia. (mm)</th>
+              <th class="right">Actual Dia. (mm)</th>
+              <th class="right">Running Mtr Qty</th>
+            </tr>
+          </thead>
+          <tbody id="tbody2"></tbody>
+        </table>
+      </div>
+    </div>
 
-            try {
-                // Record start time to show off the insane new speed
-                const startTime = performance.now();
-                
-                const response = await fetch('/api/calculate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-                
-                const data = await response.json();
-                
-                const endTime = performance.now();
-                console.log(`Calculation completed in ${(endTime - startTime).toFixed(2)} ms!`);
-                
-                if (data.success) {
-                    // Update UI
-                    document.getElementById('results').style.display = 'block';
-                    
-                    // Render Overview - now fetching from E21 (via backend dict)
-                    const gpmVal = data.data.overview.gpm_calculated 
-                        ? parseFloat(data.data.overview.gpm_calculated).toFixed(1)
-                        : 'N/A';
-                    document.getElementById('res-gpm').innerText = gpmVal;
-                    
-                    const headVal = data.data.overview.head_g10_total 
-                        ? parseFloat(data.data.overview.head_g10_total).toFixed(2) 
-                        : 'N/A';
-                    document.getElementById('res-head').innerText = headVal;
+    <!-- Table 3 -->
+    <div class="result-section">
+      <div class="section-head">
+        <div class="num-badge badge-green">3</div>
+        <h2>Accessories &amp; Valves<span class="sub">Flanges, valves, strainers &amp; fittings</span></h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sr-cell">Sr. No.</th>
+              <th>Accessories Item</th>
+              <th class="right">Actual Size (mm)</th>
+              <th class="right">Total Qty (Each)</th>
+            </tr>
+          </thead>
+          <tbody id="tbody3"></tbody>
+        </table>
+      </div>
+    </div>
 
-                    // Render Table Layout
-                    const tbody = document.querySelector('#summaryTable tbody');
-                    tbody.innerHTML = '';
-                    
-                    let isFirstHeader = true;
+  </div><!-- /results -->
+</div><!-- /container -->
 
-                    data.data.tables.forEach(row => {
-                        const tr = document.createElement('tr');
-                        
-                        if (row.is_header) {
-                            // If it's a sub-header, we inject a gap row first (unless it's the very first row)
-                            if (!isFirstHeader) {
-                                const gapRow = document.createElement('tr');
-                                gapRow.innerHTML = `<td colspan="6" style="height: 40px; border: none;"></td>`;
-                                tbody.appendChild(gapRow);
-                            }
-                            isFirstHeader = false;
-                            
-                            // Render the section header
-                            tr.className = 'header-row';
-                            tr.innerHTML = `
-                                <td></td>
-                                <td colspan="5">${row.desc}</td>
-                            `;
-                            tbody.appendChild(tr);
-                        } else if (row.is_item) {
-                            // Render normal items that follow the global auto-incrementing serial number!
-                            tr.className = 'item-row';
-                            tr.innerHTML = `
-                                <td><b>${row.sr_no || ''}</b></td>
-                                <td>${row.desc || ''}</td>
-                                <td>${row.col_d || ''}</td>
-                                <td>${row.col_e || ''}</td>
-                                <td>${row.uom || ''}</td>
-                                <td><strong>${row.qty || ''}</strong></td>
-                            `;
-                            tbody.appendChild(tr);
-                        }
-                    });
-                    
-                    // Scroll down smoothly covering the increased spacing
-                    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
-                } else {
-                    alert('Error calculating: ' + data.error);
-                }
-            } catch (err) {
-                alert('Request failed. Check if backend is running.');
-                console.error(err);
-            } finally {
-                // Restore state instantly
-                btn.disabled = false;
-                btnText.style.display = 'block';
-                loader.style.display = 'none';
-            }
-        });
-    </script>
+<script>
+async function calculate() {
+  const payload = {
+    cfm:         document.getElementById('cfm').value,
+    ratio:       document.getElementById('ratio').value,
+    tankInside:  document.getElementById('tankInside').value,
+    workingPump: document.getElementById('workingPump').value,
+    standbyPump: document.getElementById('standbyPump').value,
+    material:    document.getElementById('material').value,
+    unitType:    document.getElementById('unitType').value,
+    ahuHeight:   document.getElementById('ahuHeight').value,
+    ahuWidth:    document.getElementById('ahuWidth').value,
+  };
+
+  const btn = document.querySelector('.btn-calc');
+  btn.textContent = 'Calculating…';
+  btn.disabled = true;
+
+  try {
+    const res  = await fetch('/api/calculate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+
+    if (!json.success) {
+      alert('Error: ' + json.error);
+      return;
+    }
+
+    const d = json.data;
+    renderOverview(d.overview);
+    renderTable1(d.table1);
+    renderTable2(d.table2);
+    renderTable3(d.table3);
+
+    const el = document.getElementById('results');
+    el.classList.add('show');
+    el.scrollIntoView({behavior:'smooth', block:'start'});
+  } catch(e) {
+    alert('Request failed: ' + e);
+  } finally {
+    btn.textContent = '▶ Calculate';
+    btn.disabled = false;
+  }
+}
+
+function renderOverview(ov) {
+  const metrics = [
+    { val: ov.gpm_calculated,      unit: 'GPM',  label: 'Flow Rate per Pump'     },
+    { val: ov.head_g10_total,       unit: 'm',    label: 'Total Head'              },
+    { val: ov.total_nozzles,        unit: 'Nos.', label: 'Total Nozzles'           },
+    { val: ov.vertical_branches,    unit: 'Nos.', label: 'Vertical Branches'       },
+    { val: ov.nozzles_per_bank,     unit: 'Nos.', label: 'Nozzles per Bank'        },
+    { val: ov.flow_lpm_per_nozzle,  unit: 'LPM',  label: 'Flow / Nozzle'          },
+    { val: ov.inlet_pressure_bar,   unit: 'Bar',  label: 'Inlet Pressure'          },
+    { val: ov.num_banks,            unit: 'Nos.', label: 'Number of Banks'         },
+  ];
+  document.getElementById('metrics-grid').innerHTML = metrics.map(m => `
+    <div class="metric-card">
+      <div class="m-val">${m.val}</div>
+      <div class="m-unit">${m.unit}</div>
+      <div class="m-label">${m.label}</div>
+    </div>`).join('');
+}
+
+function renderTable1(rows) {
+  document.getElementById('tbody1').innerHTML = rows.map(r => `
+    <tr>
+      <td class="sr-cell right">${r.sr_no}</td>
+      <td>${r.item}</td>
+      <td>${r.uom}</td>
+      <td class="right">${r.total_qty}</td>
+    </tr>`).join('');
+}
+
+function renderTable2(rows) {
+  document.getElementById('tbody2').innerHTML = rows.map(r => `
+    <tr>
+      <td class="sr-cell right">${r.sr_no}</td>
+      <td>${r.piping_item}</td>
+      <td class="right">${r.calculated_dia}</td>
+      <td class="right">${r.actual_dia}</td>
+      <td class="right">${r.total_running_mtr_qty}</td>
+    </tr>`).join('');
+}
+
+function renderTable3(rows) {
+  document.getElementById('tbody3').innerHTML = rows.map(r => `
+    <tr>
+      <td class="sr-cell right">${r.sr_no}</td>
+      <td>${r.accessories_item}</td>
+      <td class="right">${r.actual_size}</td>
+      <td class="right">${r.total_qty}</td>
+    </tr>`).join('');
+}
+</script>
 </body>
 </html>
