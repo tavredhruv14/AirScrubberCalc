@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Clean Air Scrubber Calculator</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .app-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #fff;
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  }
+  .app-header .logo {
+    width: 46px; height: 46px;
+    background: #e94560;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+  }
+  .app-header h1 { font-size: 1.35rem; font-weight: 600; letter-spacing: .3px; }
+  .app-header p  { font-size: .8rem; opacity: .7; margin-top: 2px; }
+
+  /* ── Layout ── */
+  .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* ── Input Card ── */
+  .input-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+  .card-head {
+    background: #1a1a2e;
+    color: #fff;
+    padding: .85rem 1.5rem;
+    display: flex; align-items: center; gap: .75rem;
+    font-size: .95rem; font-weight: 600;
+  }
+  .card-head .icon {
+    width: 28px; height: 28px;
+    background: rgba(255,255,255,.15);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+
+  .inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+    padding: 1.5rem;
+  }
+  .field label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 6px;
+  }
+  .field input, .field select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1a1a2e;
+    background: #fafafa;
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+  }
+  .field input:focus, .field select:focus {
+    border-color: #0f3460;
+    box-shadow: 0 0 0 3px rgba(15,52,96,.1);
+    background: #fff;
+  }
+
+  .btn-row { padding: 0 1.5rem 1.5rem; display: flex; gap: 1rem; }
+  .btn-calc {
+    flex: 1;
+    padding: 11px 0;
+    background: linear-gradient(135deg, #0f3460, #e94560);
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: .3px;
+    transition: opacity .2s, transform .1s;
+  }
+  .btn-calc:hover  { opacity: .92; }
+  .btn-calc:active { transform: scale(.98); }
+  .btn-print {
+    padding: 11px 22px;
+    background: #fff;
+    color: #0f3460;
+    border: 1.5px solid #0f3460;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .btn-print:hover { background: #f0f4ff; }
+
+  /* ── Results ── */
+  #results { display: none; }
+  #results.show { display: block; }
+
+  /* ── Overview metrics ── */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+  .metric-card {
+    background: #f7f9ff;
+    border: 1.5px solid #e8eaf6;
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    text-align: center;
+  }
+  .metric-card .m-val {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #0f3460;
+    line-height: 1;
+  }
+  .metric-card .m-unit {
+    font-size: 11px;
+    font-weight: 600;
+    color: #e94560;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-top: 2px;
+  }
+  .metric-card .m-label {
+    font-size: 11.5px;
+    color: #888;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  /* ── Result Tables ── */
+  .result-section { margin-bottom: 2rem; }
+
+  .section-head {
+    display: flex; align-items: center; gap: .75rem;
+    margin-bottom: .75rem;
+  }
+  .section-head .num-badge {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .badge-orange { background: #fff3e0; color: #e65100; }
+  .badge-blue   { background: #e3f2fd; color: #0d47a1; }
+  .badge-green  { background: #e8f5e9; color: #1b5e20; }
+
+  .section-head h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+  .section-head span.sub {
+    font-size: .8rem;
+    font-weight: 400;
+    color: #888;
+    margin-left: 6px;
+  }
+
+  .table-wrap {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  thead th {
+    padding: 11px 16px;
+    text-align: left;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: #555;
+    border-bottom: 2px solid #eee;
+    background: #fafafa;
+  }
+  thead th.right { text-align: right; }
+  tbody td {
+    padding: 11px 16px;
+    border-bottom: 1px solid #f2f2f2;
+    color: #222;
+  }
+  tbody td.right {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: #0f3460;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: #f7f9ff; }
+
+  .sr-cell {
+    width: 52px;
+    font-weight: 700;
+    color: #aaa;
+    font-size: 12px;
+  }
+
+  /* highlight row for special items */
+  tbody tr.highlight td { background: #fff8f0; }
+
+  /* ── Print styles ── */
+  @media print {
+    body { background: #fff; }
+    .app-header { background: #1a1a2e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .btn-row, .btn-print { display: none; }
+    .input-card { box-shadow: none; border: 1px solid #ddd; }
+    .table-wrap { box-shadow: none; border: 1px solid #ddd; }
+    .result-section { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="logo">AS</div>
+  <div>
+    <h1>Clean Air Scrubber — Sizing Calculator</h1>
+    <p>Nozzle Layout · Piping Schedule · Accessories & Valves</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ── Input Card ── -->
+  <div class="input-card">
+    <div class="card-head">
+      <div class="icon">⚙</div>
+      Design Input Parameters
+    </div>
+    <div class="inputs-grid">
+      <div class="field">
+        <label>Air Flow (CFM)</label>
+        <input type="number" id="cfm" value="85000" min="0"/>
+      </div>
+      <div class="field">
+        <label>L/G Ratio (GPM / 1000 CFM)</label>
+        <input type="number" id="ratio" value="6" min="1"/>
+      </div>
+      <div class="field">
+        <label>Tank Inside AHU?</label>
+        <select id="tankInside">
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Working Pumps</label>
+        <input type="number" id="workingPump" value="1" min="1"/>
+      </div>
+      <div class="field">
+        <label>Standby Pumps</label>
+        <input type="number" id="standbyPump" value="1" min="0"/>
+      </div>
+      <div class="field">
+        <label>Material</label>
+        <select id="material">
+          <option>Stainless Steel</option>
+          <option>PP</option>
+          <option>FRP</option>
+          <option>MS</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Unit Type</label>
+        <select id="unitType">
+          <option value="50Coving">50 Coving</option>
+          <option value="43Coving">43 Coving</option>
+          <option value="50Step">50 Step</option>
+          <option value="43Step">43 Step</option>
+          <option value="25Box">25 Box</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>AHU Height (mm)</label>
+        <input type="number" id="ahuHeight" value="3850" min="0"/>
+      </div>
+      <div class="field">
+        <label>AHU Width (mm)</label>
+        <input type="number" id="ahuWidth" value="5300" min="0"/>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-calc" onclick="calculate()">&#9654; Calculate</button>
+      <button class="btn-print" onclick="window.print()">&#128438; Print / Export</button>
+    </div>
+  </div>
+
+  <!-- ── Results ── -->
+  <div id="results">
+
+    <!-- Overview -->
+    <div class="input-card" style="margin-bottom:2rem;">
+      <div class="card-head" style="background:#0f3460;">
+        <div class="icon">&#9654;</div>
+        Overview — Pump &amp; System Summary
+      </div>
+      <div class="metrics-grid" id="metrics-grid"></div>
+    </div>
+
+    <!-- Table 1 -->
+    <div class="result-section">
+      <div class="section-head">
+        <div class="num-badge badge-orange">1</div>
+        <h2>Nozzle Layout<span class="sub">Total vertical branches &amp; nozzles per branch</span></h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sr-cell">Sr. No.</th>
+              <th>Item</th>
+              <th>UOM</th>
+              <th class="right">Total Qty</th>
+            </tr>
+          </thead>
+          <tbody id="tbody1"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Table 2 -->
+    <div class="result-section">
+      <div class="section-head">
+        <div class="num-badge badge-blue">2</div>
+        <h2>Piping Schedule<span class="sub">PN16/PN10 pipe sizing &amp; running lengths</span></h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sr-cell">Sr. No.</th>
+              <th>Piping Item</th>
+              <th class="right">Calc. Dia. (mm)</th>
+              <th class="right">Actual Dia. (mm)</th>
+              <th class="right">Running Mtr Qty</th>
+            </tr>
+          </thead>
+          <tbody id="tbody2"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Table 3 -->
+    <div class="result-section">
+      <div class="section-head">
+        <div class="num-badge badge-green">3</div>
+        <h2>Accessories &amp; Valves<span class="sub">Flanges, valves, strainers &amp; fittings</span></h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sr-cell">Sr. No.</th>
+              <th>Accessories Item</th>
+              <th class="right">Actual Size (mm)</th>
+              <th class="right">Total Qty (Each)</th>
+            </tr>
+          </thead>
+          <tbody id="tbody3"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /results -->
+</div><!-- /container -->
+
+<script>
+async function calculate() {
+  const payload = {
+    cfm:         document.getElementById('cfm').value,
+    ratio:       document.getElementById('ratio').value,
+    tankInside:  document.getElementById('tankInside').value,
+    workingPump: document.getElementById('workingPump').value,
+    standbyPump: document.getElementById('standbyPump').value,
+    material:    document.getElementById('material').value,
+    unitType:    document.getElementById('unitType').value,
+    ahuHeight:   document.getElementById('ahuHeight').value,
+    ahuWidth:    document.getElementById('ahuWidth').value,
+  };
+
+  const btn = document.querySelector('.btn-calc');
+  btn.textContent = 'Calculating…';
+  btn.disabled = true;
+
+  try {
+    const res  = await fetch('/api/calculate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+
+    if (!json.success) {
+      alert('Error: ' + json.error);
+      return;
+    }
+
+    const d = json.data;
+    renderOverview(d.overview);
+    renderTable1(d.table1);
+    renderTable2(d.table2);
+    renderTable3(d.table3);
+
+    const el = document.getElementById('results');
+    el.classList.add('show');
+    el.scrollIntoView({behavior:'smooth', block:'start'});
+  } catch(e) {
+    alert('Request failed: ' + e);
+  } finally {
+    btn.textContent = '▶ Calculate';
+    btn.disabled = false;
+  }
+}
+
+function renderOverview(ov) {
+  const metrics = [
+    { val: ov.gpm_calculated,      unit: 'GPM',  label: 'Flow Rate per Pump'     },
+    { val: ov.head_g10_total,       unit: 'm',    label: 'Total Head'              },
+    { val: ov.total_nozzles,        unit: 'Nos.', label: 'Total Nozzles'           },
+    { val: ov.vertical_branches,    unit: 'Nos.', label: 'Vertical Branches'       },
+    { val: ov.nozzles_per_bank,     unit: 'Nos.', label: 'Nozzles per Bank'        },
+    { val: ov.flow_lpm_per_nozzle,  unit: 'LPM',  label: 'Flow / Nozzle'          },
+    { val: ov.inlet_pressure_bar,   unit: 'Bar',  label: 'Inlet Pressure'          },
+    { val: ov.num_banks,            unit: 'Nos.', label: 'Number of Banks'         },
+  ];
+  document.getElementById('metrics-grid').innerHTML = metrics.map(m => `
+    <div class="metric-card">
+      <div class="m-val">${m.val}</div>
+      <div class="m-unit">${m.unit}</div>
+      <div class="m-label">${m.label}</div>
+    </div>`).join('');
+}
+
+function renderTable1(rows) {
+  document.getElementById('tbody1').innerHTML = rows.map(r => `
+    <tr>
+      <td class="sr-cell right">${r.sr_no}</td>
+      <td>${r.item}</td>
+      <td>${r.uom}</td>
+      <td class="right">${r.total_qty}</td>
+    </tr>`).join('');
+}
+
+function renderTable2(rows) {
+  document.getElementById('tbody2').innerHTML = rows.map(r => `
+    <tr>
+      <td class="sr-cell right">${r.sr_no}</td>
+      <td>${r.piping_item}</td>
+      <td class="right">${r.calculated_dia}</td>
+      <td class="right">${r.actual_dia}</td>
+      <td class="right">${r.total_running_mtr_qty}</td>
+    </tr>`).join('');
+}
+
+function renderTable3(rows) {
+  document.getElementById('tbody3').innerHTML = rows.map(r => `
+    <tr>
+      <td class="sr-cell right">${r.sr_no}</td>
+      <td>${r.accessories_item}</td>
+      <td class="right">${r.actual_size}</td>
+      <td class="right">${r.total_qty}</td>
+    </tr>`).join('');
+}
+</script>
+</body>
+</html>
