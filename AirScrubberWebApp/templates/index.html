@@ -6,12 +6,14 @@
 <title>Clean Air Scrubber Calculator</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
     font-family: 'Segoe UI', Arial, sans-serif;
     background: #f0f2f5;
     color: #1a1a2e;
     min-height: 100vh;
   }
+
   /* ── Header ── */
   .app-header {
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
@@ -32,8 +34,10 @@
   }
   .app-header h1 { font-size: 1.35rem; font-weight: 600; letter-spacing: .3px; }
   .app-header p  { font-size: .8rem; opacity: .7; margin-top: 2px; }
+
   /* ── Layout ── */
   .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+
   /* ── Input Card ── */
   .input-card {
     background: #fff;
@@ -56,6 +60,7 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 14px;
   }
+
   .inputs-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -87,6 +92,7 @@
     box-shadow: 0 0 0 3px rgba(15,52,96,.1);
     background: #fff;
   }
+
   .btn-row { padding: 0 1.5rem 1.5rem; display: flex; gap: 1rem; }
   .btn-calc {
     flex: 1;
@@ -115,9 +121,11 @@
     transition: background .2s;
   }
   .btn-print:hover { background: #f0f4ff; }
+
   /* ── Results ── */
   #results { display: none; }
   #results.show { display: block; }
+
   /* ── Overview metrics ── */
   .metrics-grid {
     display: grid;
@@ -152,8 +160,10 @@
     margin-top: 6px;
     font-weight: 500;
   }
+
   /* ── Result Tables ── */
   .result-section { margin-bottom: 2rem; }
+
   .section-head {
     display: flex; align-items: center; gap: .75rem;
     margin-bottom: .75rem;
@@ -168,6 +178,7 @@
   .badge-orange { background: #fff3e0; color: #e65100; }
   .badge-blue   { background: #e3f2fd; color: #0d47a1; }
   .badge-green  { background: #e8f5e9; color: #1b5e20; }
+
   .section-head h2 {
     font-size: 1rem;
     font-weight: 700;
@@ -179,6 +190,7 @@
     color: #888;
     margin-left: 6px;
   }
+
   .table-wrap {
     background: #fff;
     border-radius: 12px;
@@ -215,14 +227,17 @@
   }
   tbody tr:last-child td { border-bottom: none; }
   tbody tr:hover td { background: #f7f9ff; }
+
   .sr-cell {
     width: 52px;
     font-weight: 700;
     color: #aaa;
     font-size: 12px;
   }
+
   /* highlight row for special items */
   tbody tr.highlight td { background: #fff8f0; }
+
   /* ── Print styles ── */
   @media print {
     body { background: #fff; }
@@ -235,6 +250,7 @@
 </style>
 </head>
 <body>
+
 <header class="app-header">
   <div class="logo">AS</div>
   <div>
@@ -242,7 +258,9 @@
     <p>Nozzle Layout · Piping Schedule · Accessories & Valves</p>
   </div>
 </header>
+
 <div class="container">
+
   <!-- ── Input Card ── -->
   <div class="input-card">
     <div class="card-head">
@@ -306,8 +324,10 @@
       <button class="btn-print" onclick="window.print()">&#128438; Print / Export</button>
     </div>
   </div>
+
   <!-- ── Results ── -->
   <div id="results">
+
     <!-- Overview -->
     <div class="input-card" style="margin-bottom:2rem;">
       <div class="card-head" style="background:#0f3460;">
@@ -316,6 +336,7 @@
       </div>
       <div class="metrics-grid" id="metrics-grid"></div>
     </div>
+
     <!-- Table 1 -->
     <div class="result-section">
       <div class="section-head">
@@ -336,6 +357,7 @@
         </table>
       </div>
     </div>
+
     <!-- Table 2 -->
     <div class="result-section">
       <div class="section-head">
@@ -357,6 +379,7 @@
         </table>
       </div>
     </div>
+
     <!-- Table 3 -->
     <div class="result-section">
       <div class="section-head">
@@ -377,8 +400,10 @@
         </table>
       </div>
     </div>
+
   </div><!-- /results -->
 </div><!-- /container -->
+
 <script>
 async function calculate() {
   const payload = {
@@ -392,9 +417,11 @@ async function calculate() {
     ahuHeight:   document.getElementById('ahuHeight').value,
     ahuWidth:    document.getElementById('ahuWidth').value,
   };
+
   const btn = document.querySelector('.btn-calc');
   btn.textContent = 'Calculating…';
   btn.disabled = true;
+
   try {
     const res  = await fetch('/api/calculate', {
       method: 'POST',
@@ -402,15 +429,18 @@ async function calculate() {
       body: JSON.stringify(payload)
     });
     const json = await res.json();
+
     if (!json.success) {
       alert('Error: ' + json.error);
       return;
     }
+
     const d = json.data;
     renderOverview(d.overview);
     renderTable1(d.table1);
     renderTable2(d.table2);
     renderTable3(d.table3);
+
     const el = document.getElementById('results');
     el.classList.add('show');
     el.scrollIntoView({behavior:'smooth', block:'start'});
@@ -421,6 +451,7 @@ async function calculate() {
     btn.disabled = false;
   }
 }
+
 function renderOverview(ov) {
   const metrics = [
     { val: ov.gpm_calculated,      unit: 'GPM',  label: 'Flow Rate per Pump'     },
@@ -439,6 +470,7 @@ function renderOverview(ov) {
       <div class="m-label">${m.label}</div>
     </div>`).join('');
 }
+
 function renderTable1(rows) {
   document.getElementById('tbody1').innerHTML = rows.map(r => `
     <tr>
@@ -448,6 +480,7 @@ function renderTable1(rows) {
       <td class="right">${r.total_qty}</td>
     </tr>`).join('');
 }
+
 function renderTable2(rows) {
   document.getElementById('tbody2').innerHTML = rows.map(r => `
     <tr>
@@ -458,6 +491,7 @@ function renderTable2(rows) {
       <td class="right">${r.total_running_mtr_qty}</td>
     </tr>`).join('');
 }
+
 function renderTable3(rows) {
   document.getElementById('tbody3').innerHTML = rows.map(r => `
     <tr>
