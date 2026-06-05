@@ -405,6 +405,10 @@
 </div><!-- /container -->
 
 <script>
+const keepAwake = () => fetch('/ping', { cache: 'no-store' }).catch(() => {});
+keepAwake();
+setInterval(keepAwake, 5 * 60 * 1000);
+
 async function calculate() {
   const payload = {
     cfm:         document.getElementById('cfm').value,

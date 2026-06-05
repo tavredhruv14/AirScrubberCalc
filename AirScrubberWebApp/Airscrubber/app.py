@@ -8,6 +8,10 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
+@app.route('/ping')
+def ping():
+    return jsonify({"status": "awake"})
+
 @app.route('/api/calculate', methods=['POST'])
 def calculate():
     data = request.json
