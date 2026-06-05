@@ -1,8 +1,32 @@
 import os
+import threading
+import time
+from urllib.request import urlopen
 from flask import Flask, request, jsonify, render_template
 from air_scrubber_calc import calculate_scrubber
 
 app = Flask(__name__)
+
+def start_auto_ping():
+    app_url = os.environ.get('AUTO_PING_URL') or os.environ.get('RENDER_EXTERNAL_URL')
+    if not app_url:
+        return
+
+    interval_seconds = int(os.environ.get('AUTO_PING_INTERVAL_SECONDS', '240'))
+    ping_url = app_url.rstrip('/') + '/ping'
+
+    def ping_loop():
+        while True:
+            time.sleep(interval_seconds)
+            try:
+                with urlopen(ping_url, timeout=10) as response:
+                    response.read(1)
+            except Exception:
+                pass
+
+    threading.Thread(target=ping_loop, name='auto-ping', daemon=True).start()
+
+start_auto_ping()
 
 @app.route('/')
 def index():
